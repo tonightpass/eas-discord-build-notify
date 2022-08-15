@@ -19,11 +19,14 @@ const client = new Client({
 let channel;
 
 client.on("ready", async () => {
-    channel = client.channels.cache.get(String(process.env.DISCORD_CHANNEL_ID));
+    channel = await client.channels.fetch(
+        String(process.env.DISCORD_CHANNEL_ID)
+    );
 });
 
-client.login(process.env.DISCORD_BOT_TOKEN);
+client.login(String(process.env.DISCORD_BOT_TOKEN));
 
+// @ts-ignore
 String.prototype.toProperCase = function () {
     return this.replace(/\w\S*/g, function (txt) {
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
@@ -37,13 +40,12 @@ app.post("/webhook", async (req, res) => {
     const expoSignature = req.headers["expo-signature"];
 
     // process.env.EAS_SECRET_WEBHOOK_KEY has to match SECRET value set with `eas webhook:create` command
+    // @ts-ignore
     const hmac = crypto.createHmac("sha1", process.env.EAS_SECRET_WEBHOOK_KEY);
 
     try {
         hmac.update(req.body);
         const hash = `sha1=${hmac.digest("hex")}`;
-
-        console.log(hash);
 
         // @ts-ignore
         if (!safeCompare(expoSignature, hash)) {
@@ -95,6 +97,7 @@ app.post("/webhook", async (req, res) => {
                                 break;
                         }
 
+                        // @ts-ignore
                         const file = new AttachmentBuilder()
                             .setFile(qrStream)
                             .setName("qrCode.jpg");
