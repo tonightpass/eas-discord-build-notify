@@ -22,16 +22,15 @@
     1. [Create Discord Bot](https://stackabuse.com/guide-to-creating-a-discord-bot-in-javascript-with-discordjs-v13/)
         > Needs the following bot permissions: `Read Messages/View Channels`, `Send Messages`, `Embed Links`, `Attach Files`, `Use External Emojis` [optional], `Add Reactions` [optional]
     2. Invite bot to server (_make sure the bot has proper permissions in your desired channel_)
-    3. Replace `REPLACE_ME` in the [serverless.yml](./serverless.yml) file with your credentials and variables
-    4. Create [Serverless Account](https://app.serverless.com).
-    5. Further edit `serverless.yml` if needed to set your desired AWS region, etc.
-    6. Create a `.env` file and put it in the root directory. It should be in the following format:
+    3. Create [Serverless Account](https://app.serverless.com).
+    4. Further edit `serverless.yml` if needed to set your desired AWS region, etc.
+    5. Create a `.env` file and put it in the root directory. It should be in the following format:
         ```
         EAS_SECRET_WEBHOOK_KEY =
         DISCORD_BOT_TOKEN =
         DISCORD_CHANNEL_ID =
         ```
-    7. Deploy as Serverless App
+    6. Deploy as Serverless App
         ```bash
         npm i -g serverless
         npm i
