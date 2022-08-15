@@ -1,43 +1,60 @@
-## eas-slack-build-notify
-A serverless lambda to notify the result of EAS build.  
-Using [Serverless Framework](https://www.serverless.com/).
+<p align="center">
+    <img alt="Collab Logo" src="assets/collab.png" height="auto" width="500" style="border-radius:20%">
+</p>
 
-<details>
-    <summary>Screen Shot</summary>
-        - Build Success.  
-        <img src="https://user-images.githubusercontent.com/6457344/159825136-25ac895e-952c-4753-b46e-3771b20d7f58.jpg" alt="success" />
-        - Build Failed.  
-        <img src="https://user-images.githubusercontent.com/6457344/159825225-249868e4-3145-4a43-b6af-fc8c765324c3.jpg" alt="failed" />
+<h1 align="center">
+    EAS Build Webhook Notification
+</h1>
 
-</details>
+<p align="center">
+    A <strong>serverless</strong> lambda to notify the result of EAS build. 
+</p>
+<p align="center">
+    <a href="https://www.serverless.com/">
+         <img alt="Collab Logo" src="https://user-images.githubusercontent.com/2752551/30404912-d5781a00-989d-11e7-8d25-5ebca177326a.png" height="auto" width="200" style="border-radius:20%">
+    </a>
+</p>
 
 ## Installation
 
-1. Slack Bot Setup
-    1. [Create slack app](https://slack.dev/bolt-js/tutorial/getting-started)  
-    needs a [`chat:write`](https://api.slack.com/scopes/chat:write) and [`files:write`](https://api.slack.com/scopes/files:write)  
-       <img alt="slack scopes" src="./.gh-assets/slack-oauth-scopes.png">
-    1. Invite app to channel
-    1. Rewrite `REPLACE_ME` in the [serverless.yml](./serverless.yml) file
-    1. Deploy to AWS  
-        ```sh
-        $ npm i
-        $ sls deploy
+1. **Discord Bot Setup**
+    1. [Create Discord Bot](https://stackabuse.com/guide-to-creating-a-discord-bot-in-javascript-with-discordjs-v13/)
+        > Needs the following bot permissions: `Read Messages/View Channels`, `Send Messages`, `Embed Links`, `Attach Files`, `Use External Emojis` [optional], `Add Reactions` [optional]
+    2. Invite bot to server (make sure the bot has proper permissions in your desired channel)
+    3. Replace `REPLACE_ME` in the [serverless.yml](./serverless.yml) file with your credentials and variables
+    4. Further edit `serverless.yml` if needed to set your desired AWS region, etc.
+    5. Deploy to AWS
+        ```zsh
+        npm i -g serverless
+        npm i
+        serverless --console
+        serverless deploy # use if you did not deploy from previous command
         ```
-1. EAS Build Webhooks setup
-    1. Set up a webhook with [`eas webhook:create`](https://docs.expo.dev/build-reference/build-webhook/).   
-        The URL of the webhook is the URL of the endpoint returned by `sls deploy`.  
-        e.g. `https://XXXXXXXX.execute-api.YOUR-REGION.amazonaws.com/dev/webhook`
+2. **EAS Build Webhooks setup**
+    1. Set up a webhook with [`eas webhook:create`](https://docs.expo.dev/build-reference/build-webhook/).  
+       The URL of the webhook is the URL of the endpoint returned by `serverless deploy`.  
+       e.g. `https://XXXXXXXX.execute-api.YOUR-REGION.amazonaws.com/dev/webhook`
 
 ## Environment
 
-| NAME | Required | Description | Example/Document |
-| - | - | - | - |
-| EAS_SECRET_WEBHOOK_KEY | true | EAS  | [see `SECRET_WEBHOOK_KEY`](https://docs.expo.dev/build-reference/build-webhook/) |
-| SLACK_TOKEN | true | The OAuth token. | xoxb-XXXXXXX |
-| SLACK_CHANNEL | true | Slack channel |  |
-| SLACK_CLIENT_ID | false | Client id |  |
-| SLACK_SIGNING_SECRET | false | signing secret |  |
-| SLACK_CLIENT_SECRET | false |  |  |
-| EXPO_DEFAULT_TEAM_NAME | false | For team accounts, it will be `undefined` , so you can set a default value | `yourteam` |
-| EXPO_SLACK_ACCOUNT | false | Used for mentioning in Slack.  Format: `expo_account1:slack_account1,expo_account2:slack_account2` | `ryo-rm:U01MG0XXXXX` |
+| NAME                   | Required | Description                                                                                                            | Example/Document                                                                 |
+| ---------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| EAS_SECRET_WEBHOOK_KEY | true     | EAS                                                                                                                    | [see `SECRET_WEBHOOK_KEY`](https://docs.expo.dev/build-reference/build-webhook/) |
+| DISCORD_BOT_TOKEN      | true     | The OAuth token.                                                                                                       | NzkyNzE1NDU0MTk2MDg4ODQy.X-hvzA.Ovy4MCQywSkoMRRclStW4xAYK7I                      |
+| DISCORD_CHANNEL_ID     | true     | [Discord channel](https://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-) | 8573456205924986                                                                 |
+| EXPO_DEFAULT_TEAM_NAME | false    | For team accounts, it will be `undefined` , so you can set a default value                                             | `yourteam`                                                                       |
+
+## License
+
+-   [MIT © 2022 Ahnaf An Nafee](https://github.com/ahnafnafee/eas-discord-build-notify/blob/master/LICENSE)
+-   [MIT © 2021 ryo kishida](https://github.com/ryo-rm/eas-slack-build-notify/blob/main/LICENSE)
+
+<details>
+<summary><h2>Screenshots</h2></summary>
+
+<p float="left">
+    <img alt="Success" src="assets/success.png" height="auto" width="400">
+    <img alt="Fail" src="assets/fail.png" height="auto" width="400">
+</p>
+
+</details>

@@ -1,18 +1,22 @@
 {
-  "name": "eas-build-slack-notify",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "node ./index.js"
-  },
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "@slack/bolt": "^3.10.0",
-    "@vendia/serverless-express": "^4.5.4",
-    "express": "^4.17.3",
-    "qrcode": "^1.5.0",
-    "safe-compare": "^1.1.4"
-  }
+    "name": "eas-build-discord-notify",
+    "version": "1.0.0",
+    "description": "Notifies EAS Builds using Discord Bots",
+    "main": "index.js",
+    "scripts": {
+        "dev": "node index.js"
+    },
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "@vendia/serverless-express": "^4.5.4",
+        "body-parser": "^1.20.0",
+        "crypto": "^1.0.1",
+        "discord.js": "^14.2.0",
+        "dotenv": "^16.0.1",
+        "express": "^4.17.3",
+        "qrcode": "^1.5.0",
+        "safe-compare": "^1.1.4",
+        "stream": "^0.0.2"
+    }
 }

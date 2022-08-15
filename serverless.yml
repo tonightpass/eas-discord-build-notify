@@ -1,26 +1,27 @@
+org: ahnafnafee
+console: true
 service: eas-build-notify
 
 provider:
-  name: aws
-  architecture: arm64
-  runtime: nodejs14.x
-  region: ap-northeast-1
+    name: aws
+    architecture: arm64
+    runtime: nodejs14.x
+    region: us-east-1
 
 package:
-  exclude:
-    - .git/**
-    - .gh-assets/**
-    - README.md
+    patterns:
+        - "!.git/**"
+        - "!.gh-assets/**"
+        - "!README.md"
+        - "!assets/**"
 functions:
-  eas-build-webhook:
-    handler: lambda.handler
-    events:
-      - http: ANY /
-      - http: 'ANY {proxy+}'
-    environment:
-      EAS_SECRET_WEBHOOK_KEY: "REPLACE_ME"
-      SLACK_CLIENT_ID: "REPLACE_ME"
-      SLACK_CLIENT_SECRET: "REPLACE_ME"
-      SLACK_TOKEN: "REPLACE_ME"
-      SLACK_SIGNING_SECRET: "REPLACE_ME"
-      SLACK_CHANNEL: "REPLACE_ME"
+    eas-build-webhook:
+        handler: lambda.handler
+        events:
+            - http: ANY /
+            - http: "ANY /{proxy+}"
+        environment:
+            EAS_SECRET_WEBHOOK_KEY: "REPLACE_ME"
+            DISCORD_BOT_TOKEN: "REPLACE_ME"
+            DISCORD_CHANNEL_ID: "REPLACE_ME"
+            EXPO_DEFAULT_TEAM_NAME: "REPLACE_ME"
