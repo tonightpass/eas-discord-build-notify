@@ -18,19 +18,53 @@
 ## Installation
 
 1. **Discord Bot Setup**
+
     1. [Create Discord Bot](https://stackabuse.com/guide-to-creating-a-discord-bot-in-javascript-with-discordjs-v13/)
         > Needs the following bot permissions: `Read Messages/View Channels`, `Send Messages`, `Embed Links`, `Attach Files`, `Use External Emojis` [optional], `Add Reactions` [optional]
-    2. Invite bot to server (make sure the bot has proper permissions in your desired channel)
-    3. Replace `REPLACE_ME` in the [serverless.yml](./serverless.yml) file with your credentials and variables
-    4. Further edit `serverless.yml` if needed to set your desired AWS region, etc.
-    5. Deploy to AWS
-        ```zsh
+    2. Invite bot to server (_make sure the bot has proper permissions in your desired channel_)
+    3. Create a `serverless.yml` file in the root directory using the following template:
+
+        ```yaml
+        org: ahnafnafee
+        console: true
+        service: eas-build-notify
+
+        provider:
+            name: aws
+            architecture: arm64
+            runtime: nodejs14.x
+            region: us-east-1
+
+        package:
+            patterns:
+                - "!.git/**"
+                - "!.gh-assets/**"
+                - "!README.md"
+                - "!assets/**"
+        functions:
+            eas-build-webhook:
+                handler: lambda.handler
+                events:
+                    - http: ANY /
+                    - http: "ANY /{proxy+}"
+                environment:
+                    EAS_SECRET_WEBHOOK_KEY: "REPLACE_ME"
+                    DISCORD_BOT_TOKEN: "REPLACE_ME"
+                    DISCORD_CHANNEL_ID: "REPLACE_ME"
+                    EXPO_DEFAULT_TEAM_NAME: "REPLACE_ME"
+        ```
+
+    4. Replace `REPLACE_ME` in the [serverless.yml](./serverless.yml) file with your credentials and variables
+    5. Further edit `serverless.yml` if needed to set your desired AWS region, etc.
+    6. Deploy to AWS
+        ```bash
         npm i -g serverless
         npm i
         serverless --console
         serverless deploy # use if you did not deploy from previous command
         ```
-2. **EAS Build Webhooks setup**
+
+1. **EAS Build Webhooks setup**
     1. Set up a webhook with [`eas webhook:create`](https://docs.expo.dev/build-reference/build-webhook/).  
        The URL of the webhook is the URL of the endpoint returned by `serverless deploy`.  
        e.g. `https://XXXXXXXX.execute-api.YOUR-REGION.amazonaws.com/dev/webhook`
