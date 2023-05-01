@@ -1,0 +1,11 @@
+{
+  "root": true,
+  "extends": [
+      "antoine"
+  ],
+  "rules": {
+    "@typescript-eslint/ban-ts-comment": "off",
+    "no-extend-native": "off",
+    "@typescript-eslint/no-var-requires": "off"
+  }
+}
