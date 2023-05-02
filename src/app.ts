@@ -27,7 +27,6 @@ let channel;
 
 client.on("ready", async () => {
   channel = await client.channels.fetch(String(process.env.DISCORD_CHANNEL_ID));
-  channel && channel.send("Ready to receive EAS build webhooks");
 });
 
 client.login(String(process.env.DISCORD_BOT_TOKEN));
