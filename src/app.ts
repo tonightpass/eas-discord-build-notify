@@ -5,6 +5,7 @@ import {
   EmbedBuilder,
   GatewayIntentBits,
   AttachmentBuilder,
+  Colors,
 } from "discord.js";
 import dotenv from "dotenv-flow";
 import express from "express";
@@ -12,6 +13,7 @@ import QRCode from "qrcode";
 import safeCompare from "safe-compare";
 import { PassThrough } from "stream";
 
+import { BuildPayload, SubmitPayload } from "./types";
 import properCase from "./utils/properCase";
 
 dotenv.config({
@@ -25,6 +27,7 @@ let channel;
 
 client.on("ready", async () => {
   channel = await client.channels.fetch(String(process.env.DISCORD_CHANNEL_ID));
+  channel && channel.send("Ready to receive EAS build webhooks");
 });
 
 client.login(String(process.env.DISCORD_BOT_TOKEN));
@@ -49,122 +52,95 @@ app.post("/webhook", async (req, res) => {
       res.status(500).send("Signatures didn't match");
     } else {
       try {
-        const { id, appId, status, artifacts, metadata, platform, error } =
-          JSON.parse(req.body);
+        const payload = JSON.parse(req.body) as SubmitPayload | BuildPayload;
 
-        const username = metadata?.username;
+        const isBuild = "priority" in payload;
+        const type = isBuild ? "Build" : "Submission";
 
-        const buildUrl = `https://expo.io/accounts/${
-          metadata?.trackingContext?.account_id ||
-          process.env.EXPO_DEFAULT_TEAM_NAME
-        }/projects/${metadata?.appName}/builds/${id}`;
+        const embed = new EmbedBuilder()
+          .setAuthor({
+            name: `${payload.accountName}`,
+            iconURL: "https://github.com/expo.png",
+          })
+          .setTimestamp()
+          .setFooter({
+            text: "EAS Build",
+            iconURL: "https://github.com/expo.png",
+          });
+        const files: AttachmentBuilder[] = [];
 
-        switch (status) {
-          case "finished": {
-            const qrStream = new PassThrough();
-            switch (platform) {
-              case "ios":
-                await QRCode.toFileStream(
-                  qrStream,
-                  `itms-services://?action=download-manifest;url=https://api.expo.dev/v2/projects/${appId}/builds/${id}/manifest.plist`,
-                  {
-                    type: "png",
-                    width: 256,
-                    errorCorrectionLevel: "H",
-                  }
-                );
-                break;
-              default:
-                await QRCode.toFileStream(qrStream, artifacts?.buildUrl, {
-                  type: "png",
-                  width: 256,
-                  errorCorrectionLevel: "H",
-                });
-                break;
-            }
+        switch (payload.status) {
+          case "canceled": {
+            embed
+              .setTitle(
+                `🛑 ${type} Canceled - ${properCase(payload.projectName)}`
+              )
+              .setColor(Colors.Greyple);
 
-            const file = new AttachmentBuilder(qrStream).setName("qrCode.jpg");
-
-            if (client.isReady()) {
-              const successEmbed = new EmbedBuilder()
-                .setColor(0x0099ff)
-                .setTitle(
-                  `✅ Build Success - ${properCase(metadata.buildProfile)}`
-                )
-                .setURL(buildUrl)
-                .setAuthor({
-                  name: `${username}`,
-                  iconURL:
-                    "https://raw.githubusercontent.com/Player2Dev/Player2-Assets/main/assets/expo_logo.png",
-                })
-                .setDescription(
-                  `${
-                    platform === "ios"
-                      ? "Scan QR Code"
-                      : `Direct Download Link: ${artifacts?.buildUrl}`
-                  } `
-                )
-                .setThumbnail(
-                  "https://raw.githubusercontent.com/Player2Dev/Player2-Assets/main/assets/expo_logo.png"
-                )
-                .addFields(
-                  {
-                    name: "Platform",
-                    value: `${platform}`,
-                    inline: true,
-                  },
-                  {
-                    name: "\u200B",
-                    value: "\u200B",
-                    inline: true,
-                  },
-                  {
-                    name: "App Version",
-                    value:
-                      `${metadata?.appVersion}` +
-                      ((metadata?.appBuildVersion &&
-                        ` (${metadata?.appBuildVersion})`) ||
-                        ""),
-                    inline: true,
-                  }
-                )
-                .setImage("attachment://qrCode.jpg")
-                .setTimestamp()
-                .setFooter({
-                  text: "EAS Build",
-                  iconURL:
-                    "https://raw.githubusercontent.com/Player2Dev/Player2-Assets/main/assets/expo_logo.png",
-                });
-
-              channel &&
-                channel.send({
-                  embeds: [successEmbed],
-                  files: [file],
-                });
-            }
             break;
           }
           case "errored": {
-            if (client.isReady()) {
-              const errorEmbed = new EmbedBuilder()
-                .setColor(0x0099ff)
-                .setTitle(
-                  `⛔ Build Failure - ${properCase(metadata.buildProfile)}`
-                )
-                .setURL(buildUrl)
-                .setAuthor({
-                  name: `${username}`,
-                  iconURL:
-                    "https://raw.githubusercontent.com/Player2Dev/Player2-Assets/main/assets/expo_logo.png",
-                })
-                .setDescription(`Click URL for more more details: ${buildUrl}`)
-                .setThumbnail(
-                  "https://raw.githubusercontent.com/Player2Dev/Player2-Assets/main/assets/expo_logo.png"
+            embed
+              .setTitle(
+                `⛔ ${type} Failure - ${properCase(payload.projectName)}`
+              )
+              .setColor(Colors.Red);
+
+            break;
+          }
+          case "finished": {
+            embed
+              .setTitle(
+                `✅ ${type} Success - ${properCase(payload.projectName)}`
+              )
+              .setColor(Colors.Green);
+
+            if (isBuild) {
+              const buildPayload = payload as BuildPayload;
+
+              const qrStream = new PassThrough();
+              switch (buildPayload.platform) {
+                case "ios":
+                  await QRCode.toFileStream(
+                    qrStream,
+                    `itms-services://?action=download-manifest;url=https://api.expo.dev/v2/projects/${appId}/builds/${id}/manifest.plist`,
+                    {
+                      type: "png",
+                      width: 256,
+                      errorCorrectionLevel: "H",
+                    }
+                  );
+                  break;
+                default:
+                  await QRCode.toFileStream(
+                    qrStream,
+                    buildPayload.artifacts?.buildUrl,
+                    {
+                      type: "png",
+                      width: 256,
+                      errorCorrectionLevel: "H",
+                    }
+                  );
+                  break;
+              }
+
+              const file = new AttachmentBuilder(qrStream).setName(
+                "qrCode.jpg"
+              );
+              files.push(file);
+
+              embed
+                .setDescription(
+                  `${
+                    buildPayload.platform === "ios"
+                      ? "Scan QR Code"
+                      : `Direct Download Link: ${buildPayload.artifacts?.buildUrl}`
+                  } `
                 )
                 .addFields(
                   {
                     name: "Platform",
-                    value: `${platform}`,
+                    value: `${buildPayload.platform}`,
                     inline: true,
                   },
                   {
@@ -175,43 +151,34 @@ app.post("/webhook", async (req, res) => {
                   {
                     name: "App Version",
                     value:
-                      `${metadata?.appVersion}` +
-                      ((metadata?.appBuildVersion &&
-                        ` (${metadata?.appBuildVersion})`) ||
+                      `${buildPayload.metadata.appVersion}` +
+                      ((buildPayload.metadata.appBuildVersion &&
+                        ` (${buildPayload.metadata.appBuildVersion})`) ||
                         ""),
-                    inline: true,
-                  },
-                  {
-                    name: "Error Code",
-                    value: `${error?.errorCode}`,
-                    inline: true,
-                  },
-                  {
-                    name: "\u200B",
-                    value: "\u200B",
-                    inline: true,
-                  },
-                  {
-                    name: "Error Message",
-                    value: `${error?.message}`,
                     inline: true,
                   }
                 )
-                .setTimestamp()
-                .setFooter({
-                  text: "EAS Build",
-                  iconURL:
-                    "https://raw.githubusercontent.com/Player2Dev/Player2-Assets/main/assets/expo_logo.png",
-                });
-
-              channel && channel.send({ embeds: [errorEmbed] });
+                .setImage(`attachment://${file.name}`)
+                .setURL(buildPayload.artifacts?.buildUrl || "");
+            } else {
+              const submissionPayload = payload as SubmitPayload;
+              embed
+                .setDescription(
+                  `Submission Details: ${submissionPayload.submissionDetailsPageUrl}`
+                )
+                .addFields({
+                  name: "Platform",
+                  value: `${submissionPayload.platform}`,
+                  inline: true,
+                })
+                .setURL(submissionPayload.submissionDetailsPageUrl);
             }
+
             break;
           }
-          default:
-            console.warn(req.body);
-            break;
         }
+
+        channel && channel.send({ embeds: [embed], files });
 
         res.send("OK");
       } catch (err) {
