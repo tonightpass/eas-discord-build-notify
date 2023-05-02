@@ -6,15 +6,6 @@
     EAS Build Webhook Notification
 </h1>
 
-<p align="center">
-    A <strong>serverless</strong> lambda to notify the result of EAS build. 
-</p>
-<p align="center">
-    <a href="https://www.serverless.com/">
-         <img alt="Collab Logo" src="https://user-images.githubusercontent.com/2752551/30404912-d5781a00-989d-11e7-8d25-5ebca177326a.png" height="auto" width="200" style="border-radius:20%">
-    </a>
-</p>
-
 ## Installation
 
 1. **Discord Bot Setup**
@@ -22,26 +13,16 @@
     1. [Create Discord Bot](https://stackabuse.com/guide-to-creating-a-discord-bot-in-javascript-with-discordjs-v13/)
         > Needs the following bot permissions: `Read Messages/View Channels`, `Send Messages`, `Embed Links`, `Attach Files`, `Use External Emojis` [optional], `Add Reactions` [optional]
     2. Invite bot to server (_make sure the bot has proper permissions in your desired channel_)
-    3. Create [Serverless Account](https://app.serverless.com).
-    4. Further edit `serverless.yml` if needed to set your desired AWS region, etc.
-    5. Create a `.env` file and put it in the root directory. It should be in the following format:
+    3. Create a `.env` file and put it in the root directory. It should be in the following format:
         ```
         EAS_SECRET_WEBHOOK_KEY =
         DISCORD_BOT_TOKEN =
         DISCORD_CHANNEL_ID =
         ```
-    6. Deploy as Serverless App
-        ```bash
-        npm i -g serverless
-        npm i
-        serverless --org=[username] # replace [username] with your Serverless org name
-        serverless deploy # use if you did not deploy from previous command
-        ```
 
 2. **EAS Build Webhooks setup**
-    1. Set up a webhook with [`eas webhook:create`](https://docs.expo.dev/build-reference/build-webhook/).  
-       The URL of the webhook is the URL of the endpoint returned by `serverless deploy`.  
-       e.g. `https://XXXXXXXX.execute-api.YOUR-REGION.amazonaws.com/dev/webhook`
+    1. Set up a webhook with [`eas webhook:create`](https://docs.expo.dev/build-reference/build-webhook/).
+       e.g. `<this_app_url>/webhook`
 
 ## Environment
 
