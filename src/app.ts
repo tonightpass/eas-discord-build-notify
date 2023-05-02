@@ -1,19 +1,22 @@
-require("dotenv").config({
-  silent: true,
-});
-// @ts-check
-const bodyParser = require("body-parser");
-const crypto = require("crypto");
-const {
+import bodyParser from "body-parser";
+import crypto from "crypto";
+import {
   Client,
   EmbedBuilder,
   GatewayIntentBits,
   AttachmentBuilder,
-} = require("discord.js");
-const express = require("express");
-const QRCode = require("qrcode");
-const safeCompare = require("safe-compare");
-const { PassThrough } = require("stream");
+} from "discord.js";
+import dotenv from "dotenv-flow";
+import express from "express";
+import QRCode from "qrcode";
+import safeCompare from "safe-compare";
+import { PassThrough } from "stream";
+
+import properCase from "./utils/properCase";
+
+dotenv.config({
+  silent: true,
+});
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
@@ -26,13 +29,6 @@ client.on("ready", async () => {
 
 client.login(String(process.env.DISCORD_BOT_TOKEN));
 
-// @ts-ignore
-String.prototype.toProperCase = function () {
-  return this.replace(/\w\S*/g, function (txt) {
-    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-  });
-};
-
 const app = express();
 app.use(bodyParser.text({ type: "*/*" }));
 
@@ -40,14 +36,15 @@ app.post("/webhook", async (req, res) => {
   const expoSignature = req.headers["expo-signature"];
 
   // process.env.EAS_SECRET_WEBHOOK_KEY has to match SECRET value set with `eas webhook:create` command
-  // @ts-ignore
-  const hmac = crypto.createHmac("sha1", process.env.EAS_SECRET_WEBHOOK_KEY);
+  const hmac = crypto.createHmac(
+    "sha1",
+    process.env.EAS_SECRET_WEBHOOK_KEY || ""
+  );
 
   try {
     hmac.update(req.body);
     const hash = `sha1=${hmac.digest("hex")}`;
 
-    // @ts-ignore
     if (!safeCompare(expoSignature, hash)) {
       res.status(500).send("Signatures didn't match");
     } else {
@@ -86,15 +83,13 @@ app.post("/webhook", async (req, res) => {
                 break;
             }
 
-            const file = new AttachmentBuilder()
-              .setFile(qrStream)
-              .setName("qrCode.jpg");
+            const file = new AttachmentBuilder(qrStream).setName("qrCode.jpg");
 
             if (client.isReady()) {
               const successEmbed = new EmbedBuilder()
                 .setColor(0x0099ff)
                 .setTitle(
-                  `✅ Build Success - ${metadata.buildProfile.toProperCase()}`
+                  `✅ Build Success - ${properCase(metadata.buildProfile)}`
                 )
                 .setURL(buildUrl)
                 .setAuthor({
@@ -141,7 +136,6 @@ app.post("/webhook", async (req, res) => {
                     "https://raw.githubusercontent.com/Player2Dev/Player2-Assets/main/assets/expo_logo.png",
                 });
 
-              // @ts-ignore
               channel &&
                 channel.send({
                   embeds: [successEmbed],
@@ -155,7 +149,7 @@ app.post("/webhook", async (req, res) => {
               const errorEmbed = new EmbedBuilder()
                 .setColor(0x0099ff)
                 .setTitle(
-                  `⛔ Build Failure - ${metadata.buildProfile.toProperCase()}`
+                  `⛔ Build Failure - ${properCase(metadata.buildProfile)}`
                 )
                 .setURL(buildUrl)
                 .setAuthor({
@@ -210,7 +204,6 @@ app.post("/webhook", async (req, res) => {
                     "https://raw.githubusercontent.com/Player2Dev/Player2-Assets/main/assets/expo_logo.png",
                 });
 
-              // @ts-ignore
               channel && channel.send({ embeds: [errorEmbed] });
             }
             break;
@@ -230,4 +223,4 @@ app.post("/webhook", async (req, res) => {
   }
 });
 
-module.exports = app;
+export default app;
