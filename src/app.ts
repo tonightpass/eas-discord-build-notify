@@ -77,6 +77,22 @@ app.post("/webhook", async (req, res) => {
               )
               .setColor(Colors.Greyple);
 
+            if (isBuild) {
+              const buildPayload = payload as BuildPayload;
+              embed
+                .setDescription(
+                  "The build was canceled. Please check the logs for more information."
+                )
+                .setURL(buildPayload.buildDetailsPageUrl || "");
+            } else {
+              const submissionPayload = payload as SubmitPayload;
+              embed
+                .setDescription(
+                  "The submission was canceled. Please check the logs for more information."
+                )
+                .setURL(submissionPayload.submissionDetailsPageUrl || "");
+            }
+
             break;
           }
           case "errored": {
@@ -85,6 +101,41 @@ app.post("/webhook", async (req, res) => {
                 `⛔ ${type} Failure - ${properCase(payload.projectName)}`
               )
               .setColor(Colors.Red);
+
+            if (isBuild) {
+              const buildPayload = payload as BuildPayload;
+              embed
+                .setDescription(
+                  "An error occurred during the build process. Please check the logs for more information."
+                )
+                .addFields(
+                  {
+                    name: "Error",
+                    value: buildPayload.error?.message || "Unknown error",
+                    inline: true,
+                  },
+                  {
+                    name: "\u200B",
+                    value: "\u200B",
+                    inline: true,
+                  },
+                  {
+                    name: "Code",
+                    value: buildPayload.error?.errorCode || "Unknown code",
+                    inline: true,
+                  }
+                )
+                .setURL(buildPayload.buildDetailsPageUrl || "");
+            } else {
+              const submissionPayload = payload as SubmitPayload;
+              embed
+                .setDescription(
+                  `An error occurred during the submission process. Please check the logs for more information:\n\n${
+                    submissionPayload.submissionInfo?.error || "Unknown error"
+                  }`
+                )
+                .setURL(submissionPayload.submissionDetailsPageUrl || "");
+            }
 
             break;
           }
@@ -103,7 +154,7 @@ app.post("/webhook", async (req, res) => {
                 case "ios":
                   await QRCode.toFileStream(
                     qrStream,
-                    `itms-services://?action=download-manifest;url=https://api.expo.dev/v2/projects/${appId}/builds/${id}/manifest.plist`,
+                    `itms-services://?action=download-manifest;url=https://api.expo.dev/v2/projects/${buildPayload.appId}/builds/${buildPayload.id}/manifest.plist`,
                     {
                       type: "png",
                       width: 256,
