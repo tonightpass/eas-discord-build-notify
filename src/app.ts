@@ -61,7 +61,9 @@ app.post("/webhook", async (req, res) => {
           .setAuthor({
             name: `${payload.accountName}`,
             iconURL: "https://github.com/expo.png",
+            url: `https://expo.dev/accounts/${payload.accountName}`,
           })
+          .setThumbnail("https://github.com/expo.png")
           .setTimestamp()
           .setFooter({
             text: "EAS Build",
@@ -130,9 +132,28 @@ app.post("/webhook", async (req, res) => {
               const submissionPayload = payload as SubmitPayload;
               embed
                 .setDescription(
-                  `An error occurred during the submission process. Please check the logs for more information:\n\n${
-                    submissionPayload.submissionInfo?.error || "Unknown error"
-                  }`
+                  "An error occurred during the submission process. Please check the logs for more information."
+                )
+                .addFields(
+                  {
+                    name: "Error",
+                    value:
+                      submissionPayload.submissionInfo?.error?.message ||
+                      "Unknown error",
+                    inline: true,
+                  },
+                  {
+                    name: "\u200B",
+                    value: "\u200B",
+                    inline: true,
+                  },
+                  {
+                    name: "Code",
+                    value:
+                      submissionPayload.submissionInfo?.error?.errorCode ||
+                      "Unknown code",
+                    inline: true,
+                  }
                 )
                 .setURL(submissionPayload.submissionDetailsPageUrl || "");
             }
