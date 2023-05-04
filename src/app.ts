@@ -116,8 +116,8 @@ app.post("/webhook", async (req, res) => {
                     inline: true,
                   },
                   {
-                    name: "\u200B",
-                    value: "\u200B",
+                    name: "Profile",
+                    value: buildPayload.metadata.buildProfile || "Unknown profile",
                     inline: true,
                   },
                   {
