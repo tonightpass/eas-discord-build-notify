@@ -205,8 +205,8 @@ app.post("/webhook", async (req, res) => {
                   `${
                     buildPayload.platform === "ios"
                       ? "Scan QR Code"
-                      : `Direct Download Link: ${buildPayload.artifacts?.buildUrl}`
-                  } `
+                      : `[Download](${buildPayload.artifacts?.buildUrl})`
+                  } - [Details](${buildPayload.buildDetailsPageUrl})`
                 )
                 .addFields(
                   {
